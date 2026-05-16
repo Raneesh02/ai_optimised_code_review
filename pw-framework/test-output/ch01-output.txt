@@ -1,0 +1,27 @@
+PASS (0) FAIL (2)
+
+1. CH01 happy path checkout as logged-in user
+   Test timeout of 30000ms exceeded while running "beforeEach" hook.
+
+     19 |
+     20 | test.describe('Checkout', () => {
+   > 21 |   test.beforeEach(async ({ page }) => {
+        |        ^
+     22 |     await addProductToCart(page, PRODUCTS.search.validKeyword);
+     23 |     await page.goto('/checkout');
+     24 |   });
+       at /Users/raneeshchoudhary/projects/claude_skills_pw/pw-framework/tests/checkout/checkout.spec.ts:21:8
+2. CH01 happy path checkout as logged-in user
+   Test timeout of 30000ms exceeded while running "beforeEach" hook.
+
+     19 |
+     20 | test.describe('Checkout', () => {
+   > 21 |   test.beforeEach(async ({ page }) => {
+        |        ^
+     22 |     await addProductToCart(page, PRODUCTS.search.validKeyword);
+     23 |     await page.goto('/checkout');
+     24 |   });
+       at /Users/raneeshchoudhary/projects/claude_skills_pw/pw-framework/tests/checkout/checkout.spec.ts:21:8
+
+Time: 65049ms
+EXIT_CODE:1
