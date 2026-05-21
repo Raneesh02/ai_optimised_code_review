@@ -2,6 +2,8 @@
 
 Answer these questions. Claude uses your answers to generate a `~/.claude/CLAUDE.md` that makes it work efficiently for you across all projects.
 
+**For Claude:** When running this intake, use the `AskUserQuestion` tool — present each section as interactive multiple choice, max 4 questions per call. Do not dump questions as plain text.
+
 Skip any question that doesn't apply. One-line answers are fine.
 
 ---
