@@ -39,7 +39,7 @@ import { test, expect } from '../../fixtures';
 
 ## Coding Standards
 
-Full conventions in `.claude/standards.md`. Key rules:
+Full conventions in `.claude/code_guidelines.md`. Key rules:
 
 - Selector priority: `data-test` > `id` > ARIA role — no CSS/xpath
 - No assertions inside page objects
@@ -48,7 +48,7 @@ Full conventions in `.claude/standards.md`. Key rules:
 - AAA structure — `beforeEach` for nav/auth, test owns its data
 - Extract helpers only at 3+ usages (rule of three)
 
-Skills that need full detail should `@.claude/standards.md` directly.
+Skills that need full detail should `@.claude/code_guidelines.md` directly.
 
 ---
 

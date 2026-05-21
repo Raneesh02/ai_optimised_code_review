@@ -88,7 +88,7 @@ Your answer:
 
 ```
 [ ] Inside CLAUDE.md — all-in-one, simpler setup
-[ ] Separate file at .claude/standards.md (recommended — keeps CLAUDE.md lean, skills @-include on demand)
+[ ] Separate file at .claude/code_guidelines.md (recommended — keeps CLAUDE.md lean, skills @-include on demand)
 [ ] Custom path — I'll specify:
 ```
 
