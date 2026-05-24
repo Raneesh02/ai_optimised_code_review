@@ -54,9 +54,10 @@ Search `pages/` for a file matching the feature (e.g. `contact.page.ts` for Cont
    - Priority: `data-test` attribute > `id` > ARIA role. Never CSS class or xpath.
 4. Build a list: `{ locatorName, selector, selectorType }` for every interactive element needed.
 
-Report: "Phase 1 complete — [found existing PO / discovered N elements via DOM inspection]"
+> CHECKPOINT — write state before proceeding:
+> Update `.claude/automate-test.state.json`: set `lastPhase: 1`.
 
-Update `.claude/automate-test.state.json`: set `lastPhase: 1`.
+Report: "Phase 1 complete — [found existing PO / discovered N elements via DOM inspection]"
 
 ---
 
@@ -100,9 +101,10 @@ export class <Feature>Page extends BasePage {
    },
    ```
 
-Report: "Phase 2 complete — created/patched pages/<feature>.page.ts + updated fixtures/index.ts"
+> CHECKPOINT — write state before proceeding:
+> Update `.claude/automate-test.state.json`: set `lastPhase: 2`, append `pages/<feature>.page.ts` and `fixtures/index.ts` to `filesWritten`.
 
-Update `.claude/automate-test.state.json`: set `lastPhase: 2`, append `pages/<feature>.page.ts` and `fixtures/index.ts` to `filesWritten`.
+Report: "Phase 2 complete — created/patched pages/<feature>.page.ts + updated fixtures/index.ts"
 
 ---
 
@@ -142,9 +144,10 @@ test.describe('<Feature>', () => {
 - `beforeEach` owns navigation; each test owns its own data
 - Test IDs sequential per file; scan existing file before assigning
 
-Report: "Phase 3 complete — created/updated tests/<feature>/<feature>.spec.ts with N tests"
+> CHECKPOINT — write state before proceeding:
+> Update `.claude/automate-test.state.json`: set `lastPhase: 3`, append `tests/<feature>/<feature>.spec.ts` to `filesWritten`.
 
-Update `.claude/automate-test.state.json`: set `lastPhase: 3`, append `tests/<feature>/<feature>.spec.ts` to `filesWritten`.
+Report: "Phase 3 complete — created/updated tests/<feature>/<feature>.spec.ts with N tests"
 
 ---
 
@@ -171,9 +174,10 @@ Fix violations inline — do not just list them.
 
 After fixing: re-run the checklist mentally once to confirm all items pass.
 
-Report: "Phase 4 complete — [N violations found and fixed / all checks passed]"
+> CHECKPOINT — write state before proceeding:
+> Update `.claude/automate-test.state.json`: set `lastPhase: 4`.
 
-Update `.claude/automate-test.state.json`: set `lastPhase: 4`.
+Report: "Phase 4 complete — [N violations found and fixed / all checks passed]"
 
 ---
 
@@ -184,7 +188,7 @@ Run:
 npx playwright test tests/<feature>/<feature>.spec.ts --reporter=list
 ```
 
-**All pass**: Report "Phase 5 complete — all N tests passed." Update `.claude/automate-test.state.json`: set `lastPhase: 5`.
+**All pass**: Update `.claude/automate-test.state.json`: set `lastPhase: 5`. Then report "Phase 5 complete — all N tests passed."
 
 **Any fail**:
 1. Read failure output in full.
