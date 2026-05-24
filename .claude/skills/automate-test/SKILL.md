@@ -11,12 +11,29 @@ The user invoked `/automate-test <file>`. `<file>` is the path to a test case ma
 
 ## Pre-flight
 
-Parse the test case file:
+**Step 1 — Parse the test case file:**
 - Feature name (from heading)
 - Target URL or path (from file header comments or scenario steps)
 - All test case IDs (C01, C02…) and their scenarios
 
-Report one line: "Automating N tests for [Feature] at [URL]" — then start Phase 1.
+**Step 2 — Probe Playwright MCP:**
+Call `mcp__playwright__browser_navigate` with URL `about:blank`.
+- Succeeds → continue.
+- Fails → abort immediately: "Playwright MCP unavailable — start it and retry. Aborting."
+
+**Step 3 — Check checkpoint `.claude/automate-test.state.json`:**
+- Not found → proceed fresh.
+- Found → compare `sourceFile` and `testCaseIds` against current invocation:
+  - **Same file + same IDs + `lastPhase === 5`** → report "Already fully automated — N/N tests in tests/<feature>/<feature>.spec.ts. Nothing to do." Stop.
+  - **Same file + same IDs + `lastPhase < 5`** → report "Resuming from Phase <lastPhase + 1>." Skip all phases ≤ `lastPhase`.
+  - **Different file or different IDs** → delete `.claude/automate-test.state.json`, proceed fresh.
+
+Before Phase 1 starts, create `.claude/automate-test.state.json`:
+```json
+{ "sourceFile": "<arg>", "testCaseIds": ["C01",...], "feature": "<feature>", "lastPhase": 0, "filesWritten": [] }
+```
+
+Report one line: "Automating N tests for [Feature] at [URL]" — then start Phase 1 (or resume).
 
 ---
 
@@ -38,6 +55,8 @@ Search `pages/` for a file matching the feature (e.g. `contact.page.ts` for Cont
 4. Build a list: `{ locatorName, selector, selectorType }` for every interactive element needed.
 
 Report: "Phase 1 complete — [found existing PO / discovered N elements via DOM inspection]"
+
+Update `.claude/automate-test.state.json`: set `lastPhase: 1`.
 
 ---
 
@@ -83,6 +102,8 @@ export class <Feature>Page extends BasePage {
 
 Report: "Phase 2 complete — created/patched pages/<feature>.page.ts + updated fixtures/index.ts"
 
+Update `.claude/automate-test.state.json`: set `lastPhase: 2`, append `pages/<feature>.page.ts` and `fixtures/index.ts` to `filesWritten`.
+
 ---
 
 ## Phase 3 — Spec File Creation
@@ -123,6 +144,8 @@ test.describe('<Feature>', () => {
 
 Report: "Phase 3 complete — created/updated tests/<feature>/<feature>.spec.ts with N tests"
 
+Update `.claude/automate-test.state.json`: set `lastPhase: 3`, append `tests/<feature>/<feature>.spec.ts` to `filesWritten`.
+
 ---
 
 ## Phase 4 — Code Review
@@ -150,6 +173,8 @@ After fixing: re-run the checklist mentally once to confirm all items pass.
 
 Report: "Phase 4 complete — [N violations found and fixed / all checks passed]"
 
+Update `.claude/automate-test.state.json`: set `lastPhase: 4`.
+
 ---
 
 ## Phase 5 — Test Execution
@@ -159,7 +184,7 @@ Run:
 npx playwright test tests/<feature>/<feature>.spec.ts --reporter=list
 ```
 
-**All pass**: Report "Phase 5 complete — all N tests passed."
+**All pass**: Report "Phase 5 complete — all N tests passed." Update `.claude/automate-test.state.json`: set `lastPhase: 5`.
 
 **Any fail**:
 1. Read failure output in full.
