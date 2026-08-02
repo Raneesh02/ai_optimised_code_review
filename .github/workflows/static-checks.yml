@@ -23,3 +23,17 @@ jobs:
 
       - name: Run TypeScript Compiler
         run: npx tsc --noEmit
+
+      - name: Enforce Architecture Guidelines (Grep Checks)
+        run: |
+          echo "Checking for banned page.waitForTimeout()..."
+          ! grep -rn "waitForTimeout" tests/ pages/
+
+          echo "Checking for assertions in Page Objects..."
+          ! grep -rn "expect(" pages/
+
+          echo "Checking for raw Playwright imports in test files..."
+          ! grep -rn "from '@playwright/test'" tests/ --exclude="auth.setup.ts"
+
+          echo "Checking for missing @regression tags..."
+          ! grep -rn "test(" tests/ --exclude="auth.setup.ts" | grep -v "@regression"
