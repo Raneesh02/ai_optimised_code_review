@@ -17,19 +17,16 @@ Evaluate the code against these five categories:
 
 ### 2. 🟠 Architecture & Imports
 - **Page Object Base Class:** Check if Page Object classes (located in `pages/`) extend `BasePage` and call `super(page)`.
-- **Pure Interaction:** Verify there are absolutely no assertions (`expect` or similar) inside Page Object files.
-- **Fixture Imports:** Check if test spec files (located in `tests/`) import `test` and `expect` from the fixtures directory (e.g., `../../fixtures`) instead of directly from `@playwright/test`.
 - **No Manual Instantiation:** Flag any occurrences where a test manually instantiates a Page Object (e.g., `new CartPage(page)`). Force dependency injection using Playwright's fixtures.
 - **Multi-step methods:** Page object methods should represent multi-step interactions only. Simple element access should be done via `readonly` locator properties.
 
 ### 3. 🟡 Selectors & Wait Patterns
-- **Banned Wait Patterns:** Look for `page.waitForTimeout()` or arbitrary `sleep` functions. Suggest state-based waits (e.g., `await expect(locator).toBeVisible({ timeout })` or `waitForFunction`) instead.
 - **No Inline Selectors in Tests:** Test specs (`.spec.ts`) must never contain raw locator queries (e.g., `page.locator('[data-test="add-to-cart"]')` or `page.getByRole(...)`). Every selector must be defined as a property inside the Page Object.
 - **Selector Priority:** Ensure selector strategies follow: `data-test` > `id` > ARIA role. Check for raw CSS classes (e.g., class-based class matches `[class*="card"]`) or xpath selectors, which are banned.
 - **Unsemantic Position selectors:** Check for `.first()`, `.last()`, or `.nth()` when a more semantic `data-test` or ARIA role should be used.
 
 ### 4. 🟡 Test Conventions
-- **Naming & Tags:** Every test must start with a Test ID prefix (e.g. `C01`, `C02`, etc.) and MUST include the `@regression` tag (e.g., `test('C01 adds item to cart @regression', async ({ cartPage }) => { ... })`).
+- **Naming:** Every test must start with a Test ID prefix (e.g. `C01`, `C02`, etc.) in its name.
 - **Assertion Messages:** Every `expect()` must include a custom user-facing message describing what is being verified (e.g. `await expect(rows, 'cart should contain exactly one item').toHaveCount(1)`).
 - **Navigation:** Suggest utilizing the Page Object's `.navigate()` method (which inherits from `BasePage` and handles wait states) instead of raw `page.goto()` inside test spec files.
 - **AAA Structure:** Ensure Arrange/Act/Assert blocks are logical. `beforeEach` should only handle navigation and auth setup, with each test owning its own data setup.
