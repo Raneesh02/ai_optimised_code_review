@@ -1,5 +1,6 @@
 import { expect, test } from '../../fixtures';
 import { PRODUCTS } from '../../data/products';
+import { CartPage } from '../../pages/cart.page';
 
 test.describe('Cart', () => {
   let itemName = '';
@@ -56,5 +57,16 @@ test.describe('Cart', () => {
     await input.fill('5');
     await input.press('Tab');
     await expect(cartPage.cartTotal, 'cart total should update after quantity change').not.toHaveText(before || '', { timeout: 5000 });
+  });
+
+  test('C08 test details page interactions @regression', async ({ page }) => {
+    // Deliberate violation: Manual Page Object Instantiation
+    const cart = new CartPage(page);
+
+    // Deliberate violation: Inline Selector and CSS class selector
+    await page.locator('.btn-checkout-summary').click();
+
+    // Deliberate violation: Assertion without a custom explanation message
+    await expect(page.locator('[data-test="order-summary"]')).toBeVisible();
   });
 });
