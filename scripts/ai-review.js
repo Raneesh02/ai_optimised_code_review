@@ -107,7 +107,7 @@ None.
 
     console.log('Fetching git diff...');
     // Fetch target branch so we can diff against it
-    execSync('git fetch origin main --depth=1');
+    execSync('git fetch origin main');
     const diff = execSync('git diff origin/main...HEAD').toString();
 
     if (!diff.trim()) {
