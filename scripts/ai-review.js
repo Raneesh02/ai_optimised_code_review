@@ -120,7 +120,7 @@ Overall Risk: [Low | Medium | High]
 **Reason:** [Clear explanation of why human review is required if Yes (e.g. changes touch critical business logic like payment, auth, feature flags), or why not if No.]
 `;
 
-    const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+    const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
