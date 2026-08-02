@@ -1,11 +1,7 @@
 {
   "sourceFile": "mds/contact_test_cases.md",
-  "testCaseIds": ["C01", "C05"],
+  "testCaseIds": ["C01", "C03", "C05"],
   "feature": "contact",
-  "lastPhase": 5,
-  "filesWritten": [
-    "pages/contact.page.ts",
-    "fixtures/index.ts",
-    "tests/contact/contact.spec.ts"
-  ]
+  "lastPhase": 0,
+  "filesWritten": []
 }

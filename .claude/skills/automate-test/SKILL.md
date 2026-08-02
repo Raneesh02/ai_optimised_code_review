@@ -16,12 +16,7 @@ The user invoked `/automate-test <file>`. `<file>` is the path to a test case ma
 - Target URL or path (from file header comments or scenario steps)
 - All test case IDs (C01, C02…) and their scenarios
 
-**Step 2 — Probe Playwright MCP:**
-Call `mcp__playwright__browser_navigate` with URL `about:blank`.
-- Succeeds → continue.
-- Fails → abort immediately: "Playwright MCP unavailable — start it and retry. Aborting."
-
-**Step 3 — Check checkpoint `.claude/automate-test.state.json`:**
+**Step 2 — Check checkpoint `.claude/automate-test.state.json`:**
 - Not found → proceed fresh.
 - Found → compare `sourceFile` and `testCaseIds` against current invocation:
   - **Same file + same IDs + `lastPhase === 5`** → report "Already fully automated — N/N tests in tests/<feature>/<feature>.spec.ts. Nothing to do." Stop.
@@ -46,13 +41,22 @@ Search `pages/` for a file matching the feature (e.g. `contact.page.ts` for Cont
 - Found but incomplete (missing locators needed for the test cases): note gaps, proceed to Phase 2 to patch.
 - Not found: proceed to Step 1B.
 
-**Step 1B — DOM inspection via Playwright MCP**
+**Step 1B — DOM inspection via dom-inspector agent**
 
-1. Use `mcp__playwright__browser_navigate` to open the target URL.
-2. Use `mcp__playwright__browser_snapshot` to capture the accessibility tree.
-3. For each element referenced in the test cases, identify its best selector:
-   - Priority: `data-test` attribute > `id` > ARIA role. Never CSS class or xpath.
-4. Build a list: `{ locatorName, selector, selectorType }` for every interactive element needed.
+Spawn an Agent with `subagent_type: "dom-inspector"`. The prompt must include:
+- The target URL
+- A plain-English description of every interactive element referenced in the test cases, including any state-triggering interactions needed to expose conditional elements (e.g. "fill email with 'notanemail' then click Send to reveal the email format error")
+- `outputFile: .claude/automate-test-locators.json`
+
+After the agent finishes, **ignore its text response entirely**. Instead, read `.claude/automate-test-locators.json` using the Read tool and parse the JSON array from that file.
+
+**Boundary rule — enforced, no exceptions:**
+- The dom-inspector agent owns ALL DOM work: navigation, snapshots, interactions, and `data-test` queries.
+- The main pipeline must NEVER navigate, snapshot, click, fill, or evaluate JavaScript on the page — not as a fallback, not to "just check one thing".
+- If `.claude/automate-test-locators.json` does not exist after the agent returns, **stop immediately**. Report: `"Phase 1 blocked — dom-inspector did not write output file. Re-run after fixing the agent."`
+- If the file contains any entry with `"selector": "MISSING"`, **stop immediately**. Report: `"Phase 1 blocked — dom-inspector could not resolve: [locatorName, ...]`. Fix the agent and re-run.`" Do not proceed to Phase 2.
+
+Store the parsed array as your locator list for Phase 2.
 
 > CHECKPOINT — write state before proceeding:
 > Update `.claude/automate-test.state.json`: set `lastPhase: 1`.
@@ -153,31 +157,22 @@ Report: "Phase 3 complete — created/updated tests/<feature>/<feature>.spec.ts 
 
 ## Phase 4 — Code Review
 
-Review every file created or modified in Phases 2–3 against `.claude/code_guidelines.md`.
-Fix violations inline — do not just list them.
+Spawn an Agent with `subagent_type: "code-review-fixer"`. The prompt must include:
+- The absolute paths of every file written in Phases 2–3 (page object, spec file, fixtures/index.ts if patched)
+- The path `.claude/code_guidelines.md`
+- `outputFile: .claude/automate-test-review.txt`
 
-**Page object checklist**:
-- Extends `BasePage`
-- All locators declared `readonly` at class level (not inline in methods)
-- Selector priority respected: `data-test` > `id` > ARIA role
-- Zero `expect` calls inside the class
-- Methods only for multi-step interactions
+After the agent finishes, **ignore its text response entirely**. Instead, read `.claude/automate-test-review.txt` using the Read tool.
 
-**Spec file checklist**:
-- Imports from `../../fixtures`, not `@playwright/test`
-- Every test name has `@regression`
-- Every `expect` has an assertion message
-- No `waitForTimeout` calls
-- `beforeEach` handles navigation
-- No shared mutable state across tests (no `let` assignments that bleed between tests)
-- AAA structure is clear
-
-After fixing: re-run the checklist mentally once to confirm all items pass.
+**Boundary rule — enforced, no exceptions:**
+- The code-review-fixer agent owns ALL review and inline fix work.
+- The main pipeline must NEVER read, edit, or patch files as a fallback if this agent fails.
+- If `.claude/automate-test-review.txt` does not exist after the agent returns, **stop immediately**. Report: `"Phase 4 blocked — code-review-fixer did not write output file. Re-run after fixing the agent."`
 
 > CHECKPOINT — write state before proceeding:
 > Update `.claude/automate-test.state.json`: set `lastPhase: 4`.
 
-Report: "Phase 4 complete — [N violations found and fixed / all checks passed]"
+Report: "Phase 4 complete — [summary from .claude/automate-test-review.txt]"
 
 ---
 
