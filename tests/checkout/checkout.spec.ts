@@ -74,4 +74,21 @@ test.describe('Checkout', () => {
     await checkoutPage.fillPayment(PAYMENT);
     await expect(page.getByText(/payment was successful|order confirmed|thank you/i)).toBeVisible();
   });
+
+  test('CH07 checkout with promotional coupon code discount @regression', async ({ checkoutPage }) => {
+    await checkoutPage.continueAsGuest(USERS.guest.email, USERS.guest.firstName, USERS.guest.lastName);
+    await checkoutPage.fillAddress(ADDRESS);
+
+    // Apply promo coupon code to modify pricing calculations (critical business logic)
+    await checkoutPage.applyCouponCode('PROMO50');
+
+    // Verification check for pricing calculations
+    await expect(checkoutPage.discountTotal, 'checkout page should display the applied discount amount').toHaveText(/$50.00/, { timeout: 5000 });
+
+    // Confirm order submission using Payment Details
+    await checkoutPage.fillPayment(PAYMENT);
+
+    // Verify successful order submission confirmation
+    await expect(checkoutPage.confirmationMessage, 'order confirmation message should be visible after successful checkout').toBeVisible();
+  });
 });

@@ -47,6 +47,12 @@ export class CheckoutPage {
   readonly cardHolderNameInput: Locator;
   readonly confirmButton: Locator;
 
+  // Coupon / Discounts (Touch Calculations)
+  readonly couponInput: Locator;
+  readonly applyCouponButton: Locator;
+  readonly discountTotal: Locator;
+  readonly confirmationMessage: Locator;
+
   constructor(page: Page) {
     this.page = page;
 
@@ -74,6 +80,12 @@ export class CheckoutPage {
     this.cvvInput = page.getByRole('textbox', { name: 'CVV' });
     this.cardHolderNameInput = page.getByRole('textbox', { name: 'Card Holder Name' });
     this.confirmButton = page.getByRole('button', { name: 'Confirm' });
+
+    // Coupon / Discounts
+    this.couponInput = page.locator('[data-test="coupon-code"]');
+    this.applyCouponButton = page.locator('[data-test="apply-coupon"]');
+    this.discountTotal = page.locator('[data-test="discount-amount"]');
+    this.confirmationMessage = page.getByText(/payment was successful|order confirmed|thank you/i);
   }
 
   async continueAsGuest(email: string, firstName: string, lastName: string) {
@@ -104,5 +116,10 @@ export class CheckoutPage {
       await this.cardHolderNameInput.fill(payment.cardHolderName ?? '');
     }
     await this.confirmButton.click();
+  }
+
+  async applyCouponCode(code: string) {
+    await this.couponInput.fill(code);
+    await this.applyCouponButton.click();
   }
 }
