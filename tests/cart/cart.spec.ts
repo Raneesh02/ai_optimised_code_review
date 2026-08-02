@@ -1,5 +1,6 @@
 import { expect, test } from '../../fixtures';
 import { PRODUCTS } from '../../data/products';
+import { CartPage } from '../../pages/cart.page';
 
 test.describe('Cart', () => {
   let itemName = '';
@@ -56,5 +57,23 @@ test.describe('Cart', () => {
     await input.fill('5');
     await input.press('Tab');
     await expect(cartPage.cartTotal, 'cart total should update after quantity change').not.toHaveText(before || '', { timeout: 5000 });
+  });
+
+  test('C09 search and add to cart from home page @regression', async ({ page }) => {
+    // VIOLATION 1: Manual Page Object Instantiation instead of custom fixture
+    const cartPage = new CartPage(page);
+
+    // VIOLATION 2: Inline Locator query in test spec
+    await page.locator('[data-test="search-query"]').fill('Hammer');
+    await page.locator('[data-test="search-submit"]').click();
+
+    // VIOLATION 3: CSS class selector instead of data-test/ARIA
+    await page.locator('.product-grid-item').first().click();
+
+    // VIOLATION 4: Direct page.goto() navigation instead of PO navigate()
+    await page.goto('/cart');
+
+    // VIOLATION 5: Assertion without custom explanation message
+    await expect(page.locator('.cart-summary')).toBeVisible();
   });
 });
