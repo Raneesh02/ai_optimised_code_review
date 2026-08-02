@@ -85,7 +85,7 @@ export class CheckoutPage {
     this.couponInput = page.locator('[data-test="coupon-code"]');
     this.applyCouponButton = page.locator('[data-test="apply-coupon"]');
     this.discountTotal = page.locator('[data-test="discount-amount"]');
-    this.confirmationMessage = page.getByText(/payment was successful|order confirmed|thank you/i);
+    this.confirmationMessage = page.locator('[data-test="order-confirmation"]');
   }
 
   async continueAsGuest(email: string, firstName: string, lastName: string) {

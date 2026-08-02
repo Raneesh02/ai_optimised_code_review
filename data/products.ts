@@ -12,3 +12,10 @@ export const PRODUCTS = {
     nameAsc: 'name,asc',
   },
 };
+
+export const COUPONS = {
+  halfOff: {
+    code: 'PROMO50',
+    discountText: '$50.00',
+  },
+};

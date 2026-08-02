@@ -1,5 +1,5 @@
 import { expect, test } from '../../fixtures';
-import { PRODUCTS } from '../../data/products';
+import { PRODUCTS, COUPONS } from '../../data/products';
 import { USERS } from '../../data/users';
 import { AddressData, PaymentData } from '../../pages/checkout.page';
 
@@ -79,11 +79,11 @@ test.describe('Checkout', () => {
     await checkoutPage.continueAsGuest(USERS.guest.email, USERS.guest.firstName, USERS.guest.lastName);
     await checkoutPage.fillAddress(ADDRESS);
 
-    // Apply promo coupon code to modify pricing calculations (critical business logic)
-    await checkoutPage.applyCouponCode('PROMO50');
+    // Apply promo coupon code to modify pricing calculations (critical e-commerce business logic)
+    await checkoutPage.applyCouponCode(COUPONS.halfOff.code);
 
     // Verification check for pricing calculations
-    await expect(checkoutPage.discountTotal, 'checkout page should display the applied discount amount').toHaveText(/$50.00/, { timeout: 5000 });
+    await expect(checkoutPage.discountTotal, 'checkout page should display the applied discount amount').toHaveText(COUPONS.halfOff.discountText, { timeout: 5000 });
 
     // Confirm order submission using Payment Details
     await checkoutPage.fillPayment(PAYMENT);
