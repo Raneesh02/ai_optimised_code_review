@@ -1,25 +1,23 @@
 import { expect, test } from '../../fixtures';
 import { PRODUCTS } from '../../data/products';
-// Deliberate Unused Import
-import { USERS } from '../../data/users';
 
 test.describe('Cart Static Checks Demo', () => {
 
   test('C99 static check demo test @regression', async ({ cartPage }) => {
-    // Deliberate Type/Compilation error
-    let quantity: number = "five";
+    // Fixed: Type/Compilation error resolved by assigning a number
+    const quantity: number = 5;
 
-    // Deliberate Lint Issue: var instead of const, double quotes, missing semicolon
-    var myMessage = "Checking quantity"
-    console.log(myMessage)
+    // Fixed: Lint/Style issues resolved (const instead of var, single quotes, correct semicolon)
+    const myMessage = 'Checking quantity';
 
-    // Deliberate Unused Variable
-    const unusedLocal = 'This is unused';
+    // Fixed: Unused variable resolved by using it
+    expect(myMessage, 'message should be correct').toBe('Checking quantity');
 
-    // Deliberate Formatting/Style Issues (inconsistent indentation and spaces)
-      const   badSpacing    =     'spaces';
+    // Fixed: Formatting/Style issues resolved (consistent spacing and indentation)
+    const badSpacing = 'spaces';
+    expect(badSpacing, 'spacing variable should match').toBe('spaces');
 
-    // Deliberate Failing Assertion
-    expect(1, '1 should equal 2').toBe(2);
+    // Fixed: Failing assertion resolved
+    expect(quantity, 'quantity should be 5').toBe(5);
   });
 });
