@@ -1,0 +1,34 @@
+name: Static Checks Workflow
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  static-checks:
+    # Run only if the comment is on a Pull Request and contains "code_review"
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, 'code_review') }}
+    
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the actual PR branch (instead of the default branch)
+      - name: Checkout Pull Request Code
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Step 3: Install dependencies
+      - name: Install Dependencies
+        run: npm ci
+
+      # Step 4: Run TypeScript Compiler (Type/Compilation Check)
+      - name: Run TypeScript Compiler
+        run: npx tsc --noEmit
