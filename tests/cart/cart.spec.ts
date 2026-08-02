@@ -50,11 +50,12 @@ test.describe('Cart', () => {
     await expect(page.getByText(/cart is empty/i)).toBeVisible();
   });
 
-  test('C07 cart total updates after quantity change', async ({ cartPage }) => {
+  test('C07 cart total updates after quantity change', async ({ cartPage, page }) => {
     const before = await cartPage.cartTotal.textContent();
     const input = cartPage.getItemQuantityInput(itemName);
     await input.fill('5');
     await input.press('Tab');
+    await page.waitForTimeout(500);
     await expect(cartPage.cartTotal, 'cart total should update after quantity change').not.toHaveText(before || '', { timeout: 5000 });
   });
 });
