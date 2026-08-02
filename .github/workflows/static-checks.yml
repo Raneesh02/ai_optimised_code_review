@@ -27,13 +27,25 @@ jobs:
       - name: Enforce Architecture Guidelines (Grep Checks)
         run: |
           echo "Checking for banned page.waitForTimeout()..."
-          ! grep -rn "waitForTimeout" tests/ pages/
+          if grep -rn "waitForTimeout" tests/ pages/; then
+            echo "::error::Found banned page.waitForTimeout() calls!"
+            exit 1
+          fi
 
           echo "Checking for assertions in Page Objects..."
-          ! grep -rn "expect(" pages/
+          if grep -rn "expect(" pages/; then
+            echo "::error::Found expect() assertions inside Page Objects!"
+            exit 1
+          fi
 
           echo "Checking for raw Playwright imports in test files..."
-          ! grep -rn "from '@playwright/test'" tests/ --exclude="auth.setup.ts"
+          if grep -rn "from '@playwright/test'" tests/ --exclude="auth.setup.ts"; then
+            echo "::error::Found raw @playwright/test imports in test files!"
+            exit 1
+          fi
 
           echo "Checking for missing @regression tags..."
-          ! grep -rn "test(" tests/ --exclude="auth.setup.ts" | grep -v "@regression"
+          if grep -rn "test(" tests/ --exclude="auth.setup.ts" | grep -v "@regression"; then
+            echo "::error::Found test cases missing the @regression tag!"
+            exit 1
+          fi
