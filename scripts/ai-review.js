@@ -2,6 +2,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 
 async function main() {
+  let setStatus = async () => {};
   try {
     const dryRun = process.env.DRY_RUN === 'true';
     const prNumber = process.env.PR_NUMBER;
@@ -18,6 +19,30 @@ async function main() {
       console.error('Missing required environment variables for PR review: PR_NUMBER, REPOSITORY, GITHUB_TOKEN');
       process.exit(1);
     }
+
+    setStatus = async (state, description) => {
+      if (dryRun) return;
+      const headSha = execSync('git rev-parse HEAD').toString().trim();
+      const response = await fetch(`https://api.github.com/repos/${repository}/statuses/${headSha}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${githubToken}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          state,
+          description,
+          context: 'ai-review'
+        })
+      });
+      if (!response.ok) {
+        console.error(`Failed to set commit status: ${response.statusText}`, await response.text());
+      }
+    };
+
+    await setStatus('pending', 'AI PR Code Review is in progress...');
     if (!dryRun) {
       console.log('Verifying status of static-checks...');
       const headSha = execSync('git rev-parse HEAD').toString().trim();
@@ -74,6 +99,7 @@ No
           console.error('Failed to post skip message comment:', await prResponse.text());
         }
 
+        await setStatus('failure', 'AI review skipped: static checks must pass first.');
         process.exit(0);
       }
     }
@@ -174,9 +200,11 @@ Overall Risk: [Low | Medium | High]
       }
 
       console.log('Review posted successfully!');
+      await setStatus('success', 'AI Code Review completed successfully.');
     }
   } catch (error) {
     console.error('Error executing AI review:', error);
+    await setStatus('error', 'AI Code Review encountered an error.');
     process.exit(1);
   }
 }
