@@ -3,37 +3,44 @@ const fs = require('fs');
 
 async function main() {
   try {
+    const dryRun = process.env.DRY_RUN === 'true';
     const prNumber = process.env.PR_NUMBER;
     const repository = process.env.REPOSITORY;
     const githubToken = process.env.GITHUB_TOKEN;
     const geminiApiKey = process.env.GEMINI_API_KEY;
 
-    if (!prNumber || !repository || !githubToken || !geminiApiKey) {
-      console.error('Missing required environment variables: PR_NUMBER, REPOSITORY, GITHUB_TOKEN, GEMINI_API_KEY');
+    if (!geminiApiKey) {
+      console.error('Missing required environment variable: GEMINI_API_KEY');
       process.exit(1);
     }
-    console.log('Verifying status of static-checks...');
-    const headSha = execSync('git rev-parse HEAD').toString().trim();
-    const checksResponse = await fetch(`https://api.github.com/repos/${repository}/commits/${headSha}/check-runs`, {
-      headers: {
-        'Authorization': `Bearer ${githubToken}`,
-        'Accept': 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28'
-      }
-    });
 
-    if (!checksResponse.ok) {
-      throw new Error(`Failed to fetch commit checks: ${checksResponse.statusText}`);
+    if (!dryRun && (!prNumber || !repository || !githubToken)) {
+      console.error('Missing required environment variables for PR review: PR_NUMBER, REPOSITORY, GITHUB_TOKEN');
+      process.exit(1);
     }
+    if (!dryRun) {
+      console.log('Verifying status of static-checks...');
+      const headSha = execSync('git rev-parse HEAD').toString().trim();
+      const checksResponse = await fetch(`https://api.github.com/repos/${repository}/commits/${headSha}/check-runs`, {
+        headers: {
+          'Authorization': `Bearer ${githubToken}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      });
 
-    const checksData = await checksResponse.json();
-    const staticCheck = checksData.check_runs.find(run => run.name === 'static-checks');
+      if (!checksResponse.ok) {
+        throw new Error(`Failed to fetch commit checks: ${checksResponse.statusText}`);
+      }
 
-    if (!staticCheck || staticCheck.conclusion !== 'success') {
-      const currentConclusion = staticCheck ? staticCheck.conclusion : 'not started';
-      console.log(`Static checks are not successful (current state: ${currentConclusion}). Posting skip message...`);
+      const checksData = await checksResponse.json();
+      const staticCheck = checksData.check_runs.find(run => run.name === 'static-checks');
 
-      const skipMessage = `## Summary
+      if (!staticCheck || staticCheck.conclusion !== 'success') {
+        const currentConclusion = staticCheck ? staticCheck.conclusion : 'not started';
+        console.log(`Static checks are not successful (current state: ${currentConclusion}). Posting skip message...`);
+
+        const skipMessage = `## Summary
 
 Overall Risk: Low
 
@@ -49,25 +56,26 @@ No
 
 **Reason:** AI review was skipped because the required **static-checks** status check is currently: \`${currentConclusion}\`. Please resolve all static checks before triggering code_review.`;
 
-      const prResponse = await fetch(`https://api.github.com/repos/${repository}/pulls/${prNumber}/reviews`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${githubToken}`,
-          'Accept': 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          body: skipMessage,
-          event: 'COMMENT'
-        })
-      });
+        const prResponse = await fetch(`https://api.github.com/repos/${repository}/pulls/${prNumber}/reviews`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${githubToken}`,
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            body: skipMessage,
+            event: 'COMMENT'
+          })
+        });
 
-      if (!prResponse.ok) {
-        console.error('Failed to post skip message comment:', await prResponse.text());
+        if (!prResponse.ok) {
+          console.error('Failed to post skip message comment:', await prResponse.text());
+        }
+
+        process.exit(0);
       }
-
-      process.exit(0);
     }
 
     console.log('Fetching git diff...');
@@ -140,27 +148,33 @@ Overall Risk: [Low | Medium | High]
     const data = await apiResponse.json();
     const reviewText = data.candidates[0].content.parts[0].text;
 
-    console.log('Posting review back to GitHub PR...');
-    const prResponse = await fetch(`https://api.github.com/repos/${repository}/pulls/${prNumber}/reviews`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${githubToken}`,
-        'Accept': 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        body: reviewText,
-        event: 'COMMENT'
-      })
-    });
+    if (dryRun) {
+      console.log('\n=== DRY RUN AI REVIEW OUTPUT ===\n');
+      console.log(reviewText);
+      console.log('\n=================================\n');
+    } else {
+      console.log('Posting review back to GitHub PR...');
+      const prResponse = await fetch(`https://api.github.com/repos/${repository}/pulls/${prNumber}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${githubToken}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          body: reviewText,
+          event: 'COMMENT'
+        })
+      });
 
-    if (!prResponse.ok) {
-      const errorText = await prResponse.text();
-      throw new Error(`GitHub API request failed: ${prResponse.statusText}\n${errorText}`);
+      if (!prResponse.ok) {
+        const errorText = await prResponse.text();
+        throw new Error(`GitHub API request failed: ${prResponse.statusText}\n${errorText}`);
+      }
+
+      console.log('Review posted successfully!');
     }
-
-    console.log('Review posted successfully!');
   } catch (error) {
     console.error('Error executing AI review:', error);
     process.exit(1);
