@@ -12,6 +12,63 @@ async function main() {
       console.error('Missing required environment variables: PR_NUMBER, REPOSITORY, GITHUB_TOKEN, GEMINI_API_KEY');
       process.exit(1);
     }
+    console.log('Verifying status of static-checks...');
+    const headSha = execSync('git rev-parse HEAD').toString().trim();
+    const checksResponse = await fetch(`https://api.github.com/repos/${repository}/commits/${headSha}/check-runs`, {
+      headers: {
+        'Authorization': `Bearer ${githubToken}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
+    });
+
+    if (!checksResponse.ok) {
+      throw new Error(`Failed to fetch commit checks: ${checksResponse.statusText}`);
+    }
+
+    const checksData = await checksResponse.json();
+    const staticCheck = checksData.check_runs.find(run => run.name === 'static-checks');
+
+    if (!staticCheck || staticCheck.conclusion !== 'success') {
+      const currentConclusion = staticCheck ? staticCheck.conclusion : 'not started';
+      console.log(`Static checks are not successful (current state: ${currentConclusion}). Posting skip message...`);
+
+      const skipMessage = `## Summary
+
+Overall Risk: Low
+
+*Takeaway:* **"Don't spend expensive intelligence on cheap problems."**
+
+## Findings
+
+None.
+
+## Human Review Required
+
+No
+
+**Reason:** AI review was skipped because the required **static-checks** status check is currently: \`${currentConclusion}\`. Please resolve all static checks before triggering code_review.`;
+
+      const prResponse = await fetch(`https://api.github.com/repos/${repository}/pulls/${prNumber}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${githubToken}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          body: skipMessage,
+          event: 'COMMENT'
+        })
+      });
+
+      if (!prResponse.ok) {
+        console.error('Failed to post skip message comment:', await prResponse.text());
+      }
+
+      process.exit(0);
+    }
 
     console.log('Fetching git diff...');
     // Fetch target branch so we can diff against it
