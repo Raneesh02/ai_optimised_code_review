@@ -1,4 +1,4 @@
-name: Static Checks Workflow
+name: PR Verification Pipeline
 
 on:
   issue_comment:
@@ -8,27 +8,50 @@ jobs:
   static-checks:
     # Run only if the comment is on a Pull Request and contains "code_review"
     if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, 'code_review') }}
-    
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the actual PR branch (instead of the default branch)
       - name: Checkout Pull Request Code
         uses: actions/checkout@v4
         with:
           ref: refs/pull/${{ github.event.issue.number }}/head
 
-      # Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # Step 3: Install dependencies
       - name: Install Dependencies
         run: npm ci
 
-      # Step 4: Run TypeScript Compiler (Type/Compilation Check)
       - name: Run TypeScript Compiler
         run: npx tsc --noEmit
+
+  ai-review:
+    needs: static-checks # Runs only if the static-checks job succeeds
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Pull Request Code (Full History)
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
+          fetch-depth: 0 # Fetch all history to perform git diffing
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run AI Review Script
+        run: node scripts/ai-review.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          REPOSITORY: ${{ github.repository }}
