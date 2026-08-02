@@ -1,35 +1,13 @@
-name: PR Verification Pipeline
+name: AI PR Code Review
 
 on:
   issue_comment:
     types: [created]
 
 jobs:
-  static-checks:
+  ai-review:
     # Run only if the comment is on a Pull Request and contains "code_review"
     if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, 'code_review') }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Pull Request Code
-        uses: actions/checkout@v4
-        with:
-          ref: refs/pull/${{ github.event.issue.number }}/head
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run TypeScript Compiler
-        run: npx tsc --noEmit
-
-  ai-review:
-    needs: static-checks # Runs only if the static-checks job succeeds
     runs-on: ubuntu-latest
 
     steps:
