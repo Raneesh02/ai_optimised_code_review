@@ -77,7 +77,8 @@ None.
 
 ## Human Review Required
 
-No
+**Required:** No
+**Level:** Low
 
 **Reason:** AI review was skipped because the required **static-checks** status check is currently: \`${currentConclusion}\`. Please resolve all static checks before triggering code_review.`;
 
@@ -149,9 +150,10 @@ Overall Risk: [Low | Medium | High]
 
 ## Human Review Required
 
-[Yes / No]
+**Required:** [Yes / No]
+**Level:** [Low | Medium | High] (Use High if changes touch critical business logic like payment gateways, authentication flows, security keys, or core database configuration; use Medium for complex page workflows; use Low for routine test scripts or updates)
 
-**Reason:** [Clear explanation of why human review is required if Yes (e.g. changes touch critical business logic like payment, auth, feature flags), or why not if No.]
+**Reason:** [Clear explanation of why human review is required with this level, or why not if No.]
 `;
 
     const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiApiKey}`, {
