@@ -8,12 +8,12 @@ test.describe('Cart', () => {
     itemName = await shopFacade.addToCartAndGoToCart(PRODUCTS.search.validKeyword);
   });
 
-  test('C01 add single product appears in cart', async ({ page }) => {
+  test('C01 add single product appears in cart @regression', async ({ page }) => {
     const rows = page.getByRole('row').filter({ hasNot: page.getByRole('columnheader') });
     await expect(rows).toHaveCount(1);
   });
 
-  test('C02 add multiple products shows multiple rows', async ({ homePage, page }) => {
+  test('C02 add multiple products shows multiple rows @regression', async ({ homePage, page }) => {
     await homePage.navigate();
     await homePage.filterByCategory(PRODUCTS.categories.powerTools);
     await homePage.getProductCardNames().first().click();
@@ -23,14 +23,14 @@ test.describe('Cart', () => {
     await expect(rows).toHaveCount(2);
   });
 
-  test('C03 increase item quantity', async ({ cartPage }) => {
+  test('C03 increase item quantity @regression', async ({ cartPage }) => {
     const input = cartPage.getItemQuantityInput(itemName);
     await input.fill('3');
     await input.press('Tab');
     await expect(input).toHaveValue('3');
   });
 
-  test('C04 decrease item quantity', async ({ cartPage }) => {
+  test('C04 decrease item quantity @regression', async ({ cartPage }) => {
     const input = cartPage.getItemQuantityInput(itemName);
     await input.fill('5');
     await input.press('Tab');
@@ -39,18 +39,18 @@ test.describe('Cart', () => {
     await expect(input).toHaveValue('2');
   });
 
-  test('C05 remove item reduces cart count', async ({ cartPage, page }) => {
+  test('C05 remove item reduces cart count @regression', async ({ cartPage, page }) => {
     await cartPage.getItemRemoveButton(itemName).click();
     const rows = page.getByRole('row').filter({ hasNot: page.getByRole('columnheader') });
     await expect(rows).toHaveCount(0);
   });
 
-  test('C06 remove all items shows empty cart state', async ({ cartPage, page }) => {
+  test('C06 remove all items shows empty cart state @regression', async ({ cartPage, page }) => {
     await cartPage.getItemRemoveButton(itemName).click();
     await expect(page.getByText(/cart is empty/i)).toBeVisible();
   });
 
-  test('C07 cart total updates after quantity change', async ({ cartPage }) => {
+  test('C07 cart total updates after quantity change @regression', async ({ cartPage }) => {
     const before = await cartPage.cartTotal.textContent();
     const input = cartPage.getItemQuantityInput(itemName);
     await input.fill('5');
