@@ -21,20 +21,20 @@ test.describe('Checkout', () => {
     await shopFacade.addToCartAndGoToCheckout(PRODUCTS.search.validKeyword);
   });
 
-  test('CH01 happy path checkout as guest', async ({ page, checkoutPage }) => {
+  test('CH01 happy path checkout as guest @regression', async ({ page, checkoutPage }) => {
     await checkoutPage.continueAsGuest(USERS.guest.email, USERS.guest.firstName, USERS.guest.lastName);
     await checkoutPage.fillAddress(ADDRESS);
     await checkoutPage.fillPayment(PAYMENT);
     await expect(page.getByText(/payment was successful|order confirmed|thank you/i)).toBeVisible();
   });
 
-  test('CH02 address validation rejects empty fields', async ({ page, checkoutPage }) => {
+  test('CH02 address validation rejects empty fields @regression', async ({ page, checkoutPage }) => {
     await checkoutPage.continueAsGuest(USERS.guest.email, USERS.guest.firstName, USERS.guest.lastName);
     await page.locator('app-address').getByRole('button', { name: 'Proceed to checkout' }).click();
     await expect(page.getByText(/required|invalid/i).first()).toBeVisible();
   });
 
-  test('CH03 invalid credit card shows payment error', async ({ page, checkoutPage }) => {
+  test('CH03 invalid credit card shows payment error @regression', async ({ page, checkoutPage }) => {
     await checkoutPage.continueAsGuest(USERS.guest.email, USERS.guest.firstName, USERS.guest.lastName);
     await checkoutPage.fillAddress(ADDRESS);
     await checkoutPage.fillPayment({
@@ -47,7 +47,7 @@ test.describe('Checkout', () => {
     await expect(page.getByText(/invalid|declined|error/i).first()).toBeVisible();
   });
 
-  test('CH04 order confirmation shows order number', async ({ page, checkoutPage }) => {
+  test('CH04 order confirmation shows order number @regression', async ({ page, checkoutPage }) => {
     await checkoutPage.continueAsGuest(USERS.guest.email, USERS.guest.firstName, USERS.guest.lastName);
     await checkoutPage.fillAddress(ADDRESS);
     await checkoutPage.fillPayment(PAYMENT);
@@ -55,14 +55,14 @@ test.describe('Checkout', () => {
     await expect(page.locator('[data-test="order-confirmation"]')).toBeVisible();
   });
 
-  test('CH05 back navigation returns to previous step', async ({ page, checkoutPage }) => {
+  test('CH05 back navigation returns to previous step @regression', async ({ page, checkoutPage }) => {
     await checkoutPage.continueAsGuest(USERS.guest.email, USERS.guest.firstName, USERS.guest.lastName);
     await expect(page.locator('app-address')).toBeVisible();
     await page.goBack();
     await expect(page).toHaveURL(/checkout/);
   });
 
-  test('CH06 checkout with multiple items completes successfully', async ({ page, checkoutPage }) => {
+  test('CH06 checkout with multiple items completes successfully @regression', async ({ page, checkoutPage }) => {
     await page.goto('/');
     await page.getByRole('checkbox', { name: PRODUCTS.categories.powerTools }).check();
     await page.getByRole('heading', { level: 5 }).first().click();
