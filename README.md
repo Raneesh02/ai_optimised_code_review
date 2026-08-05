@@ -80,7 +80,6 @@ graph TD
 - **[.agents/AGENTS.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/.agents/AGENTS.md) (Workspace Rules)**: A symbolic link to `code_guidelines.md`. It's automatically loaded by coding assistants (like Antigravity) to enforce rules in real-time.
 - **[scripts/ai-review.js](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/scripts/ai-review.js)**: Runs in CI, reads `code_guidelines.md`, calls the Gemini API to analyze the diff, and writes review comments to the PR.
 - **[.agents/skills/review-code/SKILL.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/.agents/skills/review-code/SKILL.md)**: Configures the agent's `/review-code` skill, referencing `code_guidelines.md` for standards checking.
-- **[workshop_review_instructions.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/workshop_review_instructions.md)**: Outlines the workshop exercises and specifies review report structures.
 - **[claude.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/claude.md)**: A repository onboarding map describing file purposes and locations.
 
 ---
