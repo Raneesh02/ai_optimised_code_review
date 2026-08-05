@@ -51,5 +51,41 @@ npx tsc --noEmit
 
 ---
 
-## Guidelines File
-For detailed instructions on the review stages and response schema formatting, see [workshop_review_instructions.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/workshop_review_instructions.md).
+## How the AI Code Review Works
+
+This project demonstrates a 3-stage automated review pipeline, showing how different files are linked and how guidelines are enforced:
+
+### The Review Flow
+```mermaid
+graph TD
+    A[Developer Pushes Code / PR] --> B[Stage 1: Run Static Checks]
+    B -->|Fail: Lint/Compile Errors| C[Reject PR - Save AI Tokens]
+    B -->|Pass| D[Trigger AI Review]
+    D --> E[Stage 2: Run scripts/ai-review.js]
+    E --> F[Read code_guidelines.md rules]
+    F --> G[Call Gemini API with Diff + Rules]
+    G --> H[Check if changes touch critical business logic]
+    H -->|Yes| I[Stage 3: Escalate to Human Review]
+    H -->|No| J[Post AI Review Report to GitHub PR]
+    I --> J
+```
+
+1. **Developer Pushes Code / Opens PR**: Triggers GitHub Actions.
+2. **Stage 1 (Static Checks)**: The CI workflow (`.github/workflows/static-checks.yml`) executes standard compile checks (`npx tsc --noEmit`) and custom style greps. If code violations exist (e.g. `waitForTimeout` usage, raw `@playwright/test` imports, missing tags, or assertions inside page objects), the workflow fails. **No AI intelligence or tokens are wasted on compile or lint issues.**
+3. **Stage 2 (AI Review Agent)**: If static checks pass, the **`scripts/ai-review.js`** script fetches the pull request diff and loads the project coding standards from **`code_guidelines.md`**. It passes both to the Gemini API to audit implementation quality (bugs, security, structure, clean architecture).
+4. **Stage 3 (Human Review Required)**: If the change touches core business logic, payments, or security configurations, the review tool escalates the PR by marking `Human Review Required: Yes`, ensuring developers check business intent.
+
+### File Links & Relationships
+- **[code_guidelines.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/code_guidelines.md) (Single Source of Truth)**: The primary coding standards file.
+- **[.agents/AGENTS.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/.agents/AGENTS.md) (Workspace Rules)**: A symbolic link to `code_guidelines.md`. It's automatically loaded by coding assistants (like Antigravity) to enforce rules in real-time.
+- **[scripts/ai-review.js](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/scripts/ai-review.js)**: Runs in CI, reads `code_guidelines.md`, calls the Gemini API to analyze the diff, and writes review comments to the PR.
+- **[.agents/skills/review-code/SKILL.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/.agents/skills/review-code/SKILL.md)**: Configures the agent's `/review-code` skill, referencing `code_guidelines.md` for standards checking.
+- **[workshop_review_instructions.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/workshop_review_instructions.md)**: Outlines the workshop exercises and specifies review report structures.
+- **[claude.md](file:///Users/raneeshchoudhary/projects/ai_code_review_demo/claude.md)**: A repository onboarding map describing file purposes and locations.
+
+---
+
+## Connect with the Author
+Connect with **Raneesh Choudhary** on LinkedIn:
+- [LinkedIn Profile](https://www.linkedin.com/in/raneesh-choudhary)
+
