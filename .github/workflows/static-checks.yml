@@ -3,6 +3,7 @@ name: Static Checks
 on:
   pull_request:
     branches: [ main ]
+  push:
 
 jobs:
   static-checks:
