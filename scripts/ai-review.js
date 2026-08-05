@@ -115,14 +115,14 @@ None.
       process.exit(0);
     }
 
-    console.log('Reading AGENTS.md rules...');
-    const rules = fs.readFileSync('.agents/AGENTS.md', 'utf8');
+    console.log('Reading code_guidelines.md rules...');
+    const rules = fs.readFileSync('code_guidelines.md', 'utf8');
 
     console.log('Generating AI review...');
     const prompt = `You are a senior engineer reviewing a pull request for a Playwright framework project.
 Review the following git diff against the project's coding standards.
 
-Project Coding Standards (from AGENTS.md):
+Project Coding Standards (from code_guidelines.md):
 """
 ${rules}
 """
