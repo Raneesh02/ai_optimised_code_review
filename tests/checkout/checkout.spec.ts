@@ -74,4 +74,29 @@ test.describe('Checkout', () => {
     await checkoutPage.fillPayment(PAYMENT);
     await expect(page.getByText(/payment was successful|order confirmed|thank you/i)).toBeVisible();
   });
+
+  test('CH07 checkout with gift card @regression', async ({ page, checkoutPage }) => {
+    // AI coding guidelines violation: hardcoded strings instead of importing from data
+    const email = 'giftcard_user@example.com';
+    const firstName = 'Alice';
+    const lastName = 'Smith';
+    
+    // AI coding guidelines violation: inline locator query (banned pattern in specs)
+    await page.locator('[data-test="guest-email"]').fill(email);
+    await page.locator('[data-test="guest-first-name"]').fill(firstName);
+    await page.locator('[data-test="guest-last-name"]').fill(lastName);
+    await page.locator('[data-test="guest-submit"]').click();
+    await page.locator('[data-test="proceed-2-guest"]').click();
+    
+    await checkoutPage.fillAddress(ADDRESS);
+    
+    // Accessing custom Human-critical logic (payment/discount calculation)
+    await checkoutPage.fillPayment({
+      method: 'Gift Card',
+      giftCardCode: 'GC-ALICE-2026',
+    });
+    
+    // AI coding guidelines violation: expect without explanation message
+    await expect(page.getByText(/payment was successful|order confirmed|thank you/i)).toBeVisible();
+  });
 });

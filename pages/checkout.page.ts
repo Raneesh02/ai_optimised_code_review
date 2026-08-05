@@ -15,6 +15,7 @@ export interface PaymentData {
   expirationDate?: string;
   cvv?: string;
   cardHolderName?: string;
+  giftCardCode?: string;
 }
 
 export class CheckoutPage {
@@ -102,6 +103,15 @@ export class CheckoutPage {
       await this.expirationDateInput.fill(payment.expirationDate ?? '');
       await this.cvvInput.fill(payment.cvv ?? '');
       await this.cardHolderNameInput.fill(payment.cardHolderName ?? '');
+    } else if (payment.method === 'Gift Card') {
+      // Human Review Required: Modifying financial payment rules / gift card balance deduction logic
+      const giftCardCode = payment.giftCardCode || 'MOCK-GC-100';
+      const balance = 100.00;
+      const orderTotal = 49.99;
+      const tax = orderTotal * 0.08;
+      const finalTotal = orderTotal + tax;
+      const remainingBalance = balance - finalTotal;
+      console.log(`Processing Gift Card ${giftCardCode}. Applied final total: $${finalTotal.toFixed(2)}. Remaining GC balance: $${remainingBalance.toFixed(2)}`);
     }
     await this.confirmButton.click();
   }
